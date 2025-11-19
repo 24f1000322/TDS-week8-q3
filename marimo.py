@@ -1,11 +1,4 @@
-# 24f1000322@ds.study.iitm.ac.in
-# Marimo-style notebook (provided as a Python script with notebook cell markers)
-# Email above is included as a comment as requested.
 
-# %%
-# Cell 1 — Imports and base variables
-# Data flow: This cell defines the baseline data and constants used by downstream cells.
-# Any change here (e.g., base_factor) will affect the derived data in Cell 2 and the UI behaviors.
 import math
 from IPython.display import display, Markdown
 import ipywidgets as widgets
@@ -13,10 +6,6 @@ import ipywidgets as widgets
 # Baseline constant used across notebook
 base_factor = 2  # -> used by Cell 2 to generate the base data series
 
-# %%
-# Cell 2 — Derived data dependent on Cell 1
-# Data flow: This cell reads `base_factor` from Cell 1 and constructs `base_series`.
-# If `base_factor` changes (re-run Cell 1 + this cell), the `base_series` will change.
 N = 11
 base_series = [base_factor * i for i in range(N)]
 
@@ -31,13 +20,7 @@ def compute_scaled_series(multiplier):
     """
     return [round(x * multiplier, 3) for x in base_series]
 
-# %%
-# Cell 3 — Interactive slider widget and dynamic markdown output
-# Data flow: This cell depends on Device/outputs from previous cells. It reads `base_series`
-# (created in Cell 2) and calls `compute_scaled_series(multiplier)` which uses `base_series`.
-# When the slider changes, the markdown display below updates to reflect the new state.
 
-# Create an interactive slider widget
 multiplier_slider = widgets.FloatSlider(
     value=1.0,
     min=0.0,
@@ -89,13 +72,38 @@ update_markdown()
 ui = widgets.VBox([multiplier_slider, md_output])
 display(ui)
 
-# %%
-# Cell 4 — Example: programmatic change to base_factor to demonstrate variable dependency
-# Data flow: This cell illustrates how modifying upstream variables affects downstream outputs.
-# If you change base_factor here and then re-run Cell 2 and Cell 3, you'll see updated results.
+exponent_slider = widgets.FloatSlider(
+    value=1.0,
+    min=0.5,
+    max=3.0,
+    step=0.1,
+    description='Exponent:',
+    continuous_update=True,
+)
 
-# Example change (comment/uncomment to test):
-# base_factor = 3
-# After changing `base_factor` re-run Cell 2 and then re-run Cell 3 to refresh the UI results.
+exp_md_output = widgets.Output()
+
+def update_exponent_md(change=None):
+    exp = exponent_slider.value
+    transformed = [round(x ** exp, 3) for x in base_series]
+
+    md_text = f"""
+# Exponent Slider Summary
+
+**Exponent:** `{exp}`
+
+**Transformed series (base_series^exponent):** `{transformed}`
+
+**Max value:** `{max(transformed)}`
+"""
+
+    with exp_md_output:
+        exp_md_output.clear_output()
+        display(Markdown(md_text))
+
+exponent_slider.observe(update_exponent_md, names='value')
+update_exponent_md()
+
+display(widgets.VBox([exponent_slider, exp_md_output]))
 
 # End of notebook
